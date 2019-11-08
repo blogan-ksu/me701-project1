@@ -49,28 +49,32 @@ F_m = (F_max + F_min) / 2 # Newtons
 F_a = (F_max - F_min) / 2 # Newtons
 
 def get_sigma_m(d, F_m, w, h):
-    '''Returns sigma m'''
+    '''Returns the mean stress level of cycled load.'''
     return F_m/(w*h - h*d)
 
 def get_sigma_a(d, F_a, w, h):
-    '''Returns sigma a'''
+    '''Returns the amplitude of cycled stress level.'''
     return F_a/(w*h - h*d)
+
+def get_sigma_max(d, F_m, F_a, w, h):
+    '''Returns the maximum stress at the given parameters.'''
+    return get_sigma_m(d, F_m, w, h) + get_sigma_a(d, F_a, w, h)
 
 #%%
 # Set up Minimize Equations/Constraints:
-def diameter(d, Se, Sut, F_a, F_m, n, w):
+def diameter(d, Se, Sut, F_a, F_m, n, w, h):
     x = d/w
     k_t = (3 - 3.14*(x) + 3.667*(x)**2 - 1.527*(x)**3)
-    sol = 30 - k_t*n*0.1*( F_a/Se + F_m/Sut )
+    sol = w*h*0.1 - k_t*n*0.1*( F_a/Se + F_m/Sut )
     return sol
 
 
-objective = lambda x: - diameter(x, Se, Sut, F_a, F_m, n, w)
+objective = lambda x: - diameter(x, Se, Sut, F_a, F_m, n, w, h)
 
 constraint1 = lambda x: w - x
 constraint2 = lambda x: (Sy / n) - (F_max / (w*h - h*x)) * \
                         (3 - 3.14*(x/w) + 3.667*(x/w)**2 - 1.527*(x/w)**3)
-constraint3 = lambda x: diameter(x, Se, Sut, F_a, F_m, n, w) - x
+constraint3 = lambda x: diameter(x, Se, Sut, F_a, F_m, n, w, h) - x
                         
 constraints = [{'type': 'ineq', 'fun': constraint1},
                {'type': 'ineq', 'fun': constraint2},
@@ -83,5 +87,4 @@ d = 10.0 # mm (Initial Value)
 
 answer = minimize(objective, x0=d, constraints=constraints)
 print(answer.x)
-
 
