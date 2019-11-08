@@ -52,7 +52,7 @@ def get_sigma_m(d, F_m, w, h):
     '''Returns sigma m'''
     return F_m/(w*h - h*d)
 
-def get_sigma_a(d, F_a):
+def get_sigma_a(d, F_a, w, h):
     '''Returns sigma a'''
     return F_a/(w*h - h*d)
 
